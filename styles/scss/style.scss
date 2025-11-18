@@ -1,0 +1,177 @@
+/* --- Palette & Général --- */
+        :root {
+            --dark-background: #121212; /* Fond encore plus sombre pour faire ressortir la lueur */
+            --primary-accent: #ffae42;  /* Ambre/Orangée */
+            --glow-color: #ffd870;      /* Une couleur plus lumineuse pour la lueur */
+            --text-light: #e0e0e0;      /* Texte clair */
+            --card-surface: #252525;    /* Surface des cartes */
+            --input-border: #444;
+            --font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            --glow-strength: 0 0 15px rgba(255, 216, 112, 0.4); /* Ombre de lueur subtile */
+            --glow-strong: 0 0 25px rgba(255, 216, 112, 0.7); /* Ombre de lueur forte */
+        }
+
+        body {
+            background-color: var(--dark-background);
+            font-family: var(--font-family);
+            color: var(--text-light);
+            transition: background-color 0.5s ease; /* Transition douce si le fond change */
+        }
+
+        /* --- Titres --- */
+        h2 {
+            font-weight: 300;
+            color: var(--primary-accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 8px rgba(255, 174, 66, 0.5); /* Petite lueur sur les titres principaux */
+        }
+        .card-body h5 {
+            font-weight: 500;
+            color: var(--text-light);
+            margin-bottom: 0.75rem;
+        }
+        p {
+            color: #b0b0b0;
+        }
+
+        /* --- Bannière --- */
+        .banner {
+            width: 100%;
+            height: 300px;
+            background-image: url('./assets/Banniere.png');
+            background-size: cover;
+            background-position: center 30%;
+            background-repeat: no-repeat;
+            box-shadow: inset 0 -30px 40px var(--dark-background);
+        }
+
+        /* --- Barre de Navigation --- */
+        .navbar {
+            background-color: #000000 !important;
+            border-bottom: 1px solid var(--input-border);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7); /* Ombre plus intense */
+        }
+        .navbar-brand {
+            color: var(--primary-accent) !important;
+            font-weight: 700;
+            text-shadow: 0 0 5px rgba(255, 174, 66, 0.4);
+        }
+        .nav-link {
+            color: var(--text-light) !important;
+            border-bottom: 2px solid transparent;
+            transition: color 0.3s, border-bottom 0.3s, text-shadow 0.3s;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary-accent) !important;
+            border-bottom-color: var(--primary-accent);
+            text-shadow: 0 0 8px rgba(255, 174, 66, 0.7);
+        }
+
+        /* --- Recherche et Autocomplétion --- */
+        .search-container {
+            position: relative;
+        }
+        .form-control {
+            background-color: var(--card-surface);
+            color: var(--text-light);
+            border: 1px solid var(--input-border);
+            border-radius: 4px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .form-control::placeholder {
+            color: #777;
+        }
+        .form-control:focus {
+            background-color: var(--card-surface);
+            color: var(--text-light);
+            border-color: var(--primary-accent);
+            box-shadow: var(--glow-strength); /* Lueur sur le focus */
+        }
+
+        #suggestions-list {
+            position: absolute;
+            width: calc(100% - 4px);
+            z-index: 1000;
+            list-style-type: none;
+            padding: 0;
+            margin-top: 2px;
+            border: 1px solid var(--input-border);
+            border-radius: 4px;
+            background-color: var(--card-surface);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.7);
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        #suggestions-list li {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #333;
+            transition: background-color 0.2s, color 0.2s;
+            color: var(--text-light);
+        }
+        #suggestions-list li:hover {
+            background-color: #383838;
+            color: var(--primary-accent);
+            text-shadow: 0 0 5px rgba(255, 174, 66, 0.4);
+        }
+        /* Masquer l'ancien UL */
+        #selector {
+            display: none !important;
+        }
+
+        /* --- Cartes de Bière --- */
+        .container.mt-4 {
+            padding-bottom: 40px;
+        }
+        .card {
+            border: 1px solid #333;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s; /* Transition pour la lueur */
+            background-color: var(--card-surface);
+        }
+        .card:hover {
+            transform: translateY(-8px); /* Légère élévation */
+            box-shadow: var(--glow-strong), 0 8px 15px rgba(0,0,0,0.7); /* Lueur plus forte au survol */
+            border-color: var(--primary-accent); /* Bordure accentuée */
+        }
+        .card-img-top {
+            height: 300px;
+            object-fit: contain;
+            border-radius: 8px 8px 0 0;
+            padding: 15px !important;
+            background: linear-gradient(to top, #383838, var(--card-surface));
+            border-bottom: 1px solid #333; /* Séparateur d'image */
+        }
+        .card-body {
+            padding: 1.5rem;
+        }
+        .badge {
+            font-size: 0.9rem;
+            font-weight: 500;
+            background-color: var(--primary-accent) !important;
+            color: #000000 !important;
+            padding: 0.4em 0.7em;
+            border-radius: 3px;
+            box-shadow: 0 0 8px rgba(255, 174, 66, 0.5); /* Petite lueur sur le badge */
+        }
+
+        /* --- Bouton "Charger Plus" --- */
+        #loadMore {
+            background-color: var(--primary-accent);
+            border-color: var(--primary-accent);
+            color: #000000;
+            font-weight: 700;
+            transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s; /* Transition pour la lueur */
+            padding: 10px 30px;
+            border-radius: 4px;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
+        }
+        #loadMore:hover {
+            background-color: #d18f38;
+            border-color: #d18f38;
+            transform: translateY(-3px); /* Plus d'élévation au survol */
+            box-shadow: var(--glow-strong); /* Lueur intense au survol */
+        }
