@@ -4,7 +4,7 @@
   "description": "Découvrez une sélection de bières artisanales",
   "start_url": "/",
   "scope": "/",
-  "display": "standalone",
+  "display": "fullscreen",
   "orientation": "portrait-primary",
   "background_color": "#ffffff",
   "theme_color": "#f8f9fa",
@@ -16,7 +16,7 @@
       "purpose": "any"
     },
     {
-      "src": "./assets/img/personalized_beer.png",
+      "src": "./assets/img/personalized_beer.p  ng",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
