@@ -291,16 +291,25 @@ window.addEventListener('beerAdded', async () => {
   await reloadAllBeers();
 });
 
-// 5. PWA Installation - DOMContentLoaded
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('📄 DOM chargé, initialisation...');
+// 5. PWA Installation - Initialisation
+// Vérifier si le DOM est déjà chargé ou attendre qu'il le soit
+if (document.readyState === 'loading') {
+  console.log('⏳ DOM en cours de chargement, attente...');
+  document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+  console.log('✅ DOM déjà chargé, initialisation immédiate');
+  initializeApp();
+}
+
+function initializeApp() {
+  console.log("📄 Initialisation de l'application...");
 
   // Configurer le bouton d'installation
   setupInstallButton();
 
   // Initialiser l'application
   initApp();
-});
+}
 
 // ⭐ ÉVÉNEMENT CLÉ: beforeinstallprompt
 window.addEventListener('beforeinstallprompt', event => {
