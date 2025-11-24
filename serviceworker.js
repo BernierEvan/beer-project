@@ -1,6 +1,11 @@
 // Service Worker registration and lifecycle management
 const CACHE_NAME = 'app-cache-v2';
-const urlsToCache = ['/', '/index.html', '/personalized_beer.html', '/styles/scss/css/style.css'];
+const urlsToCache = [
+  './',
+  './index.html',
+  './personalized_beer.html',
+  './styles/scss/css/style.css',
+];
 
 // Install event - cache assets
 self.addEventListener('install', event => {
