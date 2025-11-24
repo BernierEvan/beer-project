@@ -5,6 +5,7 @@ const urlsToCache = [
   './index.html',
   './personalized_beer.html',
   './styles/scss/css/style.css',
+  './script',
 ];
 
 // Install event - cache assets
