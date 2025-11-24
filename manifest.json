@@ -24,5 +24,24 @@
   ],
   "categories": ["food", "lifestyle"],
   "lang": "fr",
-  "dir": "ltr"
+  "dir": "ltr",
+
+  "shortcuts": [
+  {
+    "name": "Add A Beer",
+    "short_name": "Add Beer",
+    "description": "The page to add a beer",
+    "url": "./personalized_beer.html",
+    "icons": [
+      {
+        "src": "./assets/img/personalized_beer.png",
+        "sizes": "192x192"
+      },
+      {
+        "src": "./assets/img/personalized_beer.png",
+        "sizes": "512x512"
+      }
+    ]
+  }
+]
 }
