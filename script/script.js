@@ -10,16 +10,29 @@ const suggestionsList = document.getElementById('suggestions-list');
 let installPrompt = null;
 let installButton = null;
 
-// Service Worker Registration
+// ✅ CORRECTION: Service Worker Registration avec le bon chemin
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker
-    .register('../serviceworker.js')
-    .then(reg => {
-      console.log('Registration successful', reg);
-    })
-    .catch(e => console.error('Error during service worker registration:', e));
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('/serviceworker.js', { scope: '/' }) // Chemin absolu depuis la racine
+      .then(reg => {
+        console.log('✅ Service Worker enregistré avec succès:', reg.scope);
+
+        // Vérifier l'état du SW
+        if (reg.installing) {
+          console.log("⏳ Service Worker en cours d'installation");
+        } else if (reg.waiting) {
+          console.log('⏸️ Service Worker en attente');
+        } else if (reg.active) {
+          console.log('✅ Service Worker actif');
+        }
+      })
+      .catch(error => {
+        console.error("❌ Erreur lors de l'enregistrement du Service Worker:", error);
+      });
+  });
 } else {
-  console.warn('Service Worker is not supported');
+  console.warn('⚠️ Service Worker non supporté par ce navigateur');
 }
 
 /**
