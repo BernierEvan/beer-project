@@ -13,7 +13,7 @@ let installButton = null;
 // Service Worker Registration
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker
-    .register('/serviceworker.js')
+    .register('serviceworker.js')
     .then(reg => {
       console.log('Registration successful', reg);
     })
