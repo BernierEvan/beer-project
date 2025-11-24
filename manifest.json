@@ -5,9 +5,9 @@
   "start_url": "/beer-project/",
   "scope": "/beer-project/",
   "display": "fullscreen",
-  "orientation": "portrait-primary",
-  "background_color": "#ffffff",
-  "theme_color": "#f8f9fa",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "icons": [
     {
       "src": "./assets/img/personalized_beer.png",
