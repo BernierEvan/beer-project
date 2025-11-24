@@ -2,7 +2,7 @@
   "name": "Beer Application",
   "short_name": "BeerApp",
   "description": "Découvrez une sélection de bières artisanales",
-  "start_url": "/index.html",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
@@ -13,13 +13,13 @@
       "src": "/assets/img/personalized_beer.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/assets/img/personalized_beer.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ],
   "categories": ["food", "lifestyle"],
