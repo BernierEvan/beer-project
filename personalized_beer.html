@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add a beer</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="styles/scss/css/style.css" />
+  </head>
+
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">BeerList</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link" href="index.html">Beer</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="personalized_beer.html"
+                >Add a Beer</a
+              >
+            </li>
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="navbarDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                Special beer
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <li><a class="dropdown-item" href="#">Beer Cool</a></li>
+                <li><a class="dropdown-item" href="#">Beer zen</a></li>
+                <li><hr class="dropdown-divider" /></li>
+                <li><a class="dropdown-item" href="#">Sexy beer</a></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container mt-5">
+      <h2 class="mb-4">Ajouter une bière personnalisée</h2>
+
+      <div class="card p-4">
+        <div class="mb-3">
+          <label for="titleInput" class="form-label">Nom de la bière</label>
+          <input
+            type="text"
+            class="form-control"
+            id="titleInput"
+            placeholder="Ex: Ma Bière Artisanale"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label for="summaryInput" class="form-label">Description</label>
+          <textarea
+            class="form-control"
+            id="summaryInput"
+            rows="3"
+            placeholder="Décrivez votre bière..."
+          ></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label for="abvInput" class="form-label">Taux d'alcool (ABV en %)</label>
+          <input
+            type="number"
+            class="form-control"
+            id="abvInput"
+            placeholder="Ex: 5.5"
+            step="0.1"
+            min="0"
+            max="100"
+          />
+        </div>
+
+        <button type="button" id="addbeer" class="btn btn-primary">Ajouter à la liste</button>
+        <button type="button" id="checkDB" class="btn btn-secondary ms-2">🔍 Vérifier la DB</button>
+
+        <div id="messageContainer" class="mt-3"></div>
+      </div>
+    </div>
+
+    <!-- Charger IndexedDB d'abord -->
+    <script type="module" src="script/indexdb.js"></script>
+
+    <!-- Script pour gérer l'ajout de bière -->
+    <script type="module">
+      import { Beer } from './script/beerClass.js';
+
+      // Attendre que BeerDB soit initialisé
+      function waitForBeerDB() {
+        return new Promise(resolve => {
+          const checkInterval = setInterval(() => {
+            if (window.BeerDB) {
+              clearInterval(checkInterval);
+              console.log('BeerDB est disponible');
+              resolve();
+            }
+          }, 100);
+        });
+      }
+
+      // Initialiser après le chargement
+      document.addEventListener('DOMContentLoaded', async () => {
+        await waitForBeerDB();
+
+        const confirmadding = document.getElementById('addbeer');
+        const messageContainer = document.getElementById('messageContainer');
+        const checkDBButton = document.getElementById('checkDB');
+
+        // Bouton de vérification de la DB
+        checkDBButton.addEventListener('click', async () => {
+          const allBeers = await window.BeerDB.getBeers();
+          console.log('📊 Toutes les bières dans la DB:', allBeers);
+          console.log('📈 Total:', allBeers.length);
+
+          const customBeers = allBeers.filter(b => b.isCustom);
+          console.log('🍺 Bières personnalisées:', customBeers);
+
+          showMessage(
+            `Base de données: ${allBeers.length} bières (dont ${customBeers.length} personnalisées). Voir console pour détails.`,
+            'info'
+          );
+        });
+
+        confirmadding.addEventListener('click', async () => {
+          const titleInput = document.getElementById('titleInput');
+          const summaryInput = document.getElementById('summaryInput');
+          const abvInput = document.getElementById('abvInput');
+
+          // Validation
+          if (!titleInput.value.trim()) {
+            showMessage('Veuillez entrer un nom pour la bière', 'danger');
+            return;
+          }
+
+          if (!summaryInput.value.trim()) {
+            showMessage('Veuillez entrer une description', 'danger');
+            return;
+          }
+
+          if (!abvInput.value || parseFloat(abvInput.value) <= 0) {
+            showMessage("Veuillez entrer un taux d'alcool valide", 'danger');
+            return;
+          }
+
+          // Créer et ajouter la bière
+          try {
+            const personalizedBeer = new Beer(
+              titleInput.value.trim(),
+              summaryInput.value.trim(),
+              abvInput.value
+            );
+
+            const success = await personalizedBeer.addObjectToDB();
+
+            if (success) {
+              showMessage(
+                'Bière ajoutée avec succès! Retournez à la page principale pour la voir.',
+                'success'
+              );
+
+              // Réinitialiser le formulaire
+              titleInput.value = '';
+              summaryInput.value = '';
+              abvInput.value = '';
+            } else {
+              showMessage("Erreur lors de l'ajout de la bière", 'danger');
+            }
+          } catch (error) {
+            console.error('Erreur:', error);
+            showMessage('Une erreur est survenue: ' + error.message, 'danger');
+          }
+        });
+
+        function showMessage(message, type) {
+          messageContainer.innerHTML = `
+            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+              ${message}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          `;
+        }
+      });
+    </script>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>
