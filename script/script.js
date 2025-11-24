@@ -6,6 +6,11 @@ const searchInput = document.getElementById('searchIndex');
 const loadMoreButton = document.getElementById('loadMore');
 const suggestionsList = document.getElementById('suggestions-list');
 
+// Variable globale pour le bouton d'installation
+let installPrompt = null;
+let installButton = null;
+
+// Service Worker Registration
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker
     .register('/serviceworker.js')
@@ -34,7 +39,6 @@ function displayBeers(beersToDisplay, append = false) {
       ? `https://punkapi.online/v3/images/${beer.image}`
       : 'https://via.placeholder.com/300x300?text=No+Image';
 
-    // Badge personnalisé pour les bières custom
     const customBadge = beer.isCustom ? '<span class="badge bg-success">Personnalisée</span> ' : '';
 
     html += `
@@ -72,12 +76,9 @@ async function loadBeers(page, append) {
     const dataJson = await response.json();
 
     if (dataJson.length > 0) {
-      // Sauvegarder dans IndexedDB
       if (typeof BeerDB !== 'undefined') {
         await BeerDB.addBeers(dataJson);
       }
-
-      // Recharger toutes les bières depuis IndexedDB pour inclure les persos
       await reloadAllBeers();
     } else {
       loadMoreButton.disabled = true;
@@ -98,7 +99,6 @@ async function loadBeers(page, append) {
 async function reloadAllBeers() {
   if (typeof BeerDB !== 'undefined') {
     allBeers = await BeerDB.getBeers();
-    // Trier par ID pour avoir les bières dans l'ordre
     allBeers.sort((a, b) => a.id - b.id);
     displayBeers(allBeers, false);
     console.log(`✅ ${allBeers.length} bières rechargées depuis la DB`);
@@ -111,7 +111,6 @@ async function reloadAllBeers() {
 function showSuggestions(filteredBeers) {
   suggestionsList.innerHTML = '';
 
-  // Limite à 10 suggestions
   filteredBeers.slice(0, 10).forEach(beer => {
     const li = document.createElement('li');
     li.textContent = beer.name;
@@ -126,7 +125,6 @@ function showSuggestions(filteredBeers) {
     suggestionsList.appendChild(li);
   });
 
-  // Masquer la liste si vide
   if (filteredBeers.length === 0 || searchInput.value.trim() === '') {
     suggestionsList.innerHTML = '';
   }
@@ -137,29 +135,33 @@ function showSuggestions(filteredBeers) {
  */
 async function initApp() {
   try {
-    // Attendre que IndexedDB soit prêt
     if (typeof BeerDB !== 'undefined') {
-      // Récupérer les bières depuis IndexedDB
       const cachedBeers = await BeerDB.getBeers();
 
       if (cachedBeers.length > 0) {
-        // Afficher les bières en cache
         allBeers = cachedBeers;
-        // Trier par ID
         allBeers.sort((a, b) => a.id - b.id);
         displayBeers(allBeers, false);
         console.log('Bières chargées depuis le cache:', allBeers.length);
       } else {
-        // Pas de cache, charger depuis l'API
         await loadBeers(pageAll, false);
       }
     } else {
-      // IndexedDB non disponible, charger depuis l'API
       await loadBeers(pageAll, false);
     }
   } catch (error) {
     console.error('Erreur initialisation:', error);
     await loadBeers(pageAll, false);
+  }
+}
+
+/**
+ * Désactive le bouton d'installation
+ */
+function disableInAppInstallPrompt() {
+  installPrompt = null;
+  if (installButton) {
+    installButton.setAttribute('hidden', '');
   }
 }
 
@@ -170,14 +172,12 @@ searchInput.addEventListener('input', () => {
   const valueInput = searchInput.value.toLowerCase().trim();
 
   if (valueInput === '') {
-    // Réafficher toutes les bières si la recherche est vide
     displayBeers(allBeers, false);
     suggestionsList.innerHTML = '';
     return;
   }
 
   const filteredBeers = allBeers.filter(beer => beer.name.toLowerCase().includes(valueInput));
-
   showSuggestions(filteredBeers);
   displayBeers(filteredBeers, false);
 });
@@ -195,44 +195,50 @@ loadMoreButton.addEventListener('click', async () => {
   await loadBeers(pageAll, true);
 });
 
-// 4. Chargement Initial
-document.addEventListener('DOMContentLoaded', () => {
-  initApp();
-});
-
-// 5. Écouter l'événement personnalisé quand une bière est ajoutée
+// 4. Écouter l'événement personnalisé quand une bière est ajoutée
 window.addEventListener('beerAdded', async () => {
   console.log('🍺 Nouvelle bière détectée, rechargement...');
   await reloadAllBeers();
 });
 
-// main.js
-
-let installPrompt = null;
-
+// 5. PWA Installation
 document.addEventListener('DOMContentLoaded', () => {
-  const installButton = document.querySelector('#install');
+  installButton = document.querySelector('#install');
 
-  window.addEventListener('beforeinstallprompt', event => {
-    event.preventDefault();
-    installPrompt = event;
-    installButton.removeAttribute('hidden'); // ici ça marche
-  });
+  console.log('🔍 Bouton install trouvé:', installButton);
 
-  installButton.addEventListener('click', async () => {
-    if (!installPrompt) return;
-    const result = await installPrompt.prompt();
-    console.log(`Install prompt was: ${result.outcome}`);
-    disableInAppInstallPrompt();
-  });
+  // Initialiser l'application
+  initApp();
 });
 
+// Événement beforeinstallprompt
+window.addEventListener('beforeinstallprompt', event => {
+  console.log('✅ beforeinstallprompt déclenché');
+  event.preventDefault();
+  installPrompt = event;
 
-function disableInAppInstallPrompt() {
-  installPrompt = null;
-  installButton.setAttribute('hidden', '');
-}
-// main.js
+  if (installButton) {
+    installButton.removeAttribute('hidden');
+    console.log('👁️ Bouton install visible');
+  }
+});
+
+// Click sur le bouton d'installation
+document.addEventListener('click', async e => {
+  if (e.target && e.target.id === 'install') {
+    console.log('🖱️ Clic sur le bouton install');
+    if (!installPrompt) {
+      console.warn('⚠️ Pas de installPrompt disponible');
+      return;
+    }
+    const result = await installPrompt.prompt();
+    console.log(`Install prompt result: ${result.outcome}`);
+    disableInAppInstallPrompt();
+  }
+});
+
+// Événement appinstalled
 window.addEventListener('appinstalled', () => {
+  console.log('✅ App installée avec succès');
   disableInAppInstallPrompt();
 });
