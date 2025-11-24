@@ -10,15 +10,16 @@ const suggestionsList = document.getElementById('suggestions-list');
 let installPrompt = null;
 let installButton = null;
 
-// ✅ CORRECTION: Service Worker Registration avec le bon chemin
+console.log('🔍 Script chargé');
+
+// Service Worker Registration
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
-      .register('/serviceworker.js', { scope: '/' }) // Chemin absolu depuis la racine
+      .register('/serviceworker.js', { scope: '/' })
       .then(reg => {
-        console.log('✅ Service Worker enregistré avec succès:', reg.scope);
+        console.log('✅ Service Worker enregistré:', reg.scope);
 
-        // Vérifier l'état du SW
         if (reg.installing) {
           console.log("⏳ Service Worker en cours d'installation");
         } else if (reg.waiting) {
@@ -26,13 +27,17 @@ if ('serviceWorker' in navigator) {
         } else if (reg.active) {
           console.log('✅ Service Worker actif');
         }
+
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+          console.log('ℹ️ App déjà installée (mode standalone)');
+        }
       })
       .catch(error => {
-        console.error("❌ Erreur lors de l'enregistrement du Service Worker:", error);
+        console.error('❌ Erreur Service Worker:', error);
       });
   });
 } else {
-  console.warn('⚠️ Service Worker non supporté par ce navigateur');
+  console.warn('⚠️ Service Worker non supporté');
 }
 
 /**
@@ -169,13 +174,85 @@ async function initApp() {
 }
 
 /**
- * Désactive le bouton d'installation
+ * Gère l'installation de la PWA
  */
-function disableInAppInstallPrompt() {
-  installPrompt = null;
-  if (installButton) {
-    installButton.setAttribute('hidden', '');
+async function handleInstallClick() {
+  console.log('🖱️ CLIC SUR LE BOUTON INSTALL DÉTECTÉ');
+
+  if (!installPrompt) {
+    console.error('⚠️ installPrompt est null');
+    console.log('Vérifications:');
+    console.log('- App déjà installée?', window.matchMedia('(display-mode: standalone)').matches);
+    console.log(
+      '- HTTPS?',
+      window.location.protocol === 'https:' || window.location.hostname === 'localhost'
+    );
+    alert(
+      "Installation non disponible. L'app est peut-être déjà installée ou les conditions ne sont pas remplies."
+    );
+    return;
   }
+
+  console.log('✅ installPrompt disponible, affichage du prompt...');
+
+  try {
+    // Afficher le prompt d'installation
+    const result = await installPrompt.prompt();
+    console.log(`📊 Choix de l'utilisateur: ${result.outcome}`);
+
+    if (result.outcome === 'accepted') {
+      console.log('✅ Installation acceptée');
+    } else {
+      console.log('❌ Installation refusée');
+    }
+
+    // Réinitialiser installPrompt
+    installPrompt = null;
+
+    // Masquer le bouton
+    if (installButton) {
+      installButton.setAttribute('hidden', '');
+      console.log('🔒 Bouton masqué après installation');
+    }
+  } catch (error) {
+    console.error("❌ Erreur lors de l'installation:", error);
+    alert("Erreur lors de l'installation: " + error.message);
+  }
+}
+
+/**
+ * Configure le bouton d'installation
+ */
+function setupInstallButton() {
+  installButton = document.querySelector('#install');
+
+  if (!installButton) {
+    console.error('❌ Bouton #install introuvable dans le DOM !');
+    return;
+  }
+
+  console.log('✅ Bouton #install trouvé');
+  console.log('📍 Type du bouton:', installButton.tagName);
+  console.log('📍 ID du bouton:', installButton.id);
+  console.log('📍 Hidden initial:', installButton.hasAttribute('hidden'));
+
+  // SUPPRIMER tous les anciens event listeners en clonant le bouton
+  const newButton = installButton.cloneNode(true);
+  installButton.parentNode.replaceChild(newButton, installButton);
+  installButton = newButton;
+
+  // Ajouter UN SEUL event listener
+  installButton.addEventListener('click', handleInstallClick);
+  console.log('✅ Event listener ajouté au bouton');
+
+  // Test du bouton
+  installButton.addEventListener(
+    'click',
+    () => {
+      console.log('🔔 Clic détecté sur le bouton (listener de test)');
+    },
+    { once: true }
+  );
 }
 
 // --- Gestion des Événements ---
@@ -214,44 +291,64 @@ window.addEventListener('beerAdded', async () => {
   await reloadAllBeers();
 });
 
-// 5. PWA Installation
+// 5. PWA Installation - DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
-  installButton = document.querySelector('#install');
+  console.log('📄 DOM chargé, initialisation...');
 
-  console.log('🔍 Bouton install trouvé:', installButton);
+  // Configurer le bouton d'installation
+  setupInstallButton();
 
   // Initialiser l'application
   initApp();
 });
 
-// Événement beforeinstallprompt
+// ⭐ ÉVÉNEMENT CLÉ: beforeinstallprompt
 window.addEventListener('beforeinstallprompt', event => {
-  console.log('✅ beforeinstallprompt déclenché');
+  console.log('🎉 ========================================');
+  console.log('🎉 beforeinstallprompt DÉCLENCHÉ !');
+  console.log('🎉 ========================================');
+
   event.preventDefault();
   installPrompt = event;
 
+  console.log('📦 installPrompt stocké:', !!installPrompt);
+
   if (installButton) {
     installButton.removeAttribute('hidden');
-    console.log('👁️ Bouton install visible');
-  }
-});
-
-// Click sur le bouton d'installation
-document.addEventListener('click', async e => {
-  if (e.target && e.target.id === 'install') {
-    console.log('🖱️ Clic sur le bouton install');
-    if (!installPrompt) {
-      console.warn('⚠️ Pas de installPrompt disponible');
-      return;
-    }
-    const result = await installPrompt.prompt();
-    console.log(`Install prompt result: ${result.outcome}`);
-    disableInAppInstallPrompt();
+    console.log('👁️ Bouton install RENDU VISIBLE');
+    console.log('📍 Hidden après reveal:', installButton.hasAttribute('hidden'));
+  } else {
+    console.error("❌ installButton est null, impossible d'afficher le bouton");
+    // Réessayer de trouver le bouton
+    setTimeout(() => {
+      setupInstallButton();
+      if (installButton) {
+        installButton.removeAttribute('hidden');
+        console.log('👁️ Bouton trouvé et affiché (2ème tentative)');
+      }
+    }, 100);
   }
 });
 
 // Événement appinstalled
 window.addEventListener('appinstalled', () => {
-  console.log('✅ App installée avec succès');
-  disableInAppInstallPrompt();
+  console.log('🎊 ========================================');
+  console.log('🎊 APP INSTALLÉE AVEC SUCCÈS !');
+  console.log('🎊 ========================================');
+
+  installPrompt = null;
+
+  if (installButton) {
+    installButton.setAttribute('hidden', '');
+  }
 });
+
+// Debug: afficher l'état toutes les 5 secondes
+setInterval(() => {
+  if (installButton && !installButton.hasAttribute('hidden')) {
+    console.log('🔍 État du bouton install:');
+    console.log('  - Visible:', !installButton.hasAttribute('hidden'));
+    console.log('  - installPrompt disponible:', !!installPrompt);
+    console.log('  - Disabled:', installButton.disabled);
+  }
+}, 5000);
