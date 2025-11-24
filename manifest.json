@@ -2,8 +2,8 @@
   "name": "Beer Application",
   "short_name": "BeerApp",
   "description": "Découvrez une sélection de bières artisanales",
-  "start_url": "./",
-  "scope": "./",
+  "start_url": "/beer-project/",
+  "scope": "/beer-project/",
   "display": "fullscreen",
   "orientation": "portrait-primary",
   "background_color": "#ffffff",
@@ -16,7 +16,7 @@
       "purpose": "any"
     },
     {
-      "src": "./assets/img/personalized_beer.p  ng",
+      "src": "./assets/img/personalized_beer.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
